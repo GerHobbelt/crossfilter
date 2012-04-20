@@ -17,6 +17,7 @@ util.puts(JSON.stringify({
     "url": "http://github.com/square/crossfilter.git"
   },
   "devDependencies": {
+    "underscore": "*",
     "d3": "2.8.0",
     "vows": "0.6.1",
     "uglify-js": "1.2.5"
