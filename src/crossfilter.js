@@ -28,7 +28,7 @@ function crossfilter() {
     if (n1) {
       data = data.concat(newData);
       filters = crossfilter_arrayLengthen(filters, n += n1);
-      dataListeners.forEach(function(l) { l(newData, n0, n1); });
+      _.each(dataListeners, function(l) { l(newData, n0, n1); });
     }
 
     return crossfilter;
@@ -77,7 +77,7 @@ function crossfilter() {
     function preAdd(newData, n0, n1) {
 
       // Permute new values into natural order using a sorted index.
-      newValues = newData.map(value);
+      newValues = _.map(newData, value);
       newIndex = sort(crossfilter_range(n1), 0, n1);
       newValues = permute(newValues, newIndex);
 
@@ -134,7 +134,7 @@ function crossfilter() {
 
     // When all filters have updated, notify index listeners of the new values.
     function postAdd(newData, n0, n1) {
-      indexListeners.forEach(function(l) { l(newValues, newIndex, n0, n1); });
+      _.each(indexListeners, function(l) { l(newValues, newIndex, n0, n1); });
       newValues = newIndex = null;
     }
 
@@ -198,7 +198,7 @@ function crossfilter() {
         lo0 = lo1;
         hi0 = hi1;
       }
-      filterListeners.forEach(function(l) { l(one, added, removed); });
+      _.each(filterListeners, function(l) { l(one, added, removed); });
       return dimension;
     }
 
@@ -212,7 +212,7 @@ function crossfilter() {
         for(i=0,len=arguments.length; i < len; ++i) {
           if(i==1) union=true;
           range = arguments[i];
-          if(Array.isArray(range))
+          if(_.isArray(range))
             filterRange(range);
           else
             filterExact(range);
@@ -222,7 +222,7 @@ function crossfilter() {
         return arguments[len-1];
       } else {
         return range == null
-          ? filterAll() : Array.isArray(range)
+          ? filterAll() : _.isArray(range)
           ? filterRange(range)
           : filterExact(range);
       }
