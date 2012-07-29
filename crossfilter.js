@@ -1125,12 +1125,12 @@ function crossfilter() {
         filters[i] = (x = filters[i]) & before | x >>> 1 & after;
         removed[i] = i;
       }
-      filterListeners.forEach(function(l) { l(one, [], removed); });
+      _.each(filterListeners, function(l) { l(one, [], removed); });
       positions.splice(position, 1);
-      positions.slice(position).forEach(function(setPosition, i) {
+      _.each(positions.slice(position), function(setPosition, i) {
         setPosition(position + i);
       });
-      removeListeners.forEach(function(l) {
+      _.each(removeListeners, function(l) {
         var i = dataListeners.indexOf(l);
         if (i >= 0) dataListeners.splice(i, 1);
         i = filterListeners.indexOf(l);
