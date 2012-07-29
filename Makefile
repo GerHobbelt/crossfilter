@@ -3,7 +3,9 @@ JS_COMPILER = ./node_modules/uglify-js/bin/uglifyjs
 
 .PHONY: test benchmark
 
-all: crossfilter.min.js package.json
+all: crossfilter.js
+
+minified: crossfilter.min.js package.json
 
 crossfilter.js: \
 	src/version.js \

@@ -1,3 +1,4 @@
+global._ = require("underscore");
 var vows = require("vows"),
     assert = require("assert"),
     d3 = require("d3"),
@@ -244,6 +245,15 @@ suite.addBatch({
           assert.lesser(data.date.top(Infinity).length, 43);
           data.total.filter(null);
           assert.equal(data.date.top(Infinity).length, 43);
+        },
+        "can be passed multiple arguments and returns union of filters": function(data) {
+          try {
+            data.total.filter([0, 100], 190, [200, 300]);
+            assert.isTrue(data.total.top(Infinity).every(function(d) { return (d.total >= 0 && d.total < 100) || (d.total >= 200 && d.total < 300) || d.total == 190; }));
+            assert.equal(data.total.top(Infinity).length, 38);
+          } finally {
+            data.total.filterAll();
+          }
         }
       },
 
@@ -487,6 +497,17 @@ suite.addBatch({
             }
           }
         }
+      },
+
+      "remove": function() {
+        var data = tesseract([]);
+        var dimensions = d3.range(32).map(function(i) {
+          return data.dimension(function() { return 0; });
+        });
+        dimensions.forEach(function(d) {
+          d.remove();
+        });
+        data.dimension(function() { return 0; });
       }
     },
 
