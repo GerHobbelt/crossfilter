@@ -156,10 +156,10 @@ function crossfilter() {
           added = [],
           removed = [];
 
-      if(resetNeeded) {
+      if (resetNeeded) {
         // lo0/hi0 invalid - select all and reset
-        for(i = 0; i < n; ++i) {
-          if(filters[k = index[i]] & one) {
+        for (i = 0; i < n; ++i) {
+          if (filters[k = index[i]] & one) {
             filters[k] ^= one;
             added.push(k);
           }
@@ -168,14 +168,14 @@ function crossfilter() {
         hi0 = values.length;
         resetNeeded = false;
       }
-      if(union) {
-        for(i = lo1, j = hi1; i < j; ++i) {
+      if (union) {
+        for (i = lo1, j = hi1; i < j; ++i) {
           filters[k = index[i]] ^= one;
           added.push(k);
         }
         // expand hi0/lo0 range
-        if(lo0 > lo1) lo0 = lo1;
-        if(hi0 < hi1) hi0 = hi1;
+        if (lo0 > lo1) lo0 = lo1;
+        if (hi0 < hi1) hi0 = hi1;
       } else {
         // Fast incremental update based on previous lo index.
         if (lo1 < lo0) {
@@ -214,12 +214,12 @@ function crossfilter() {
     // If the range is an array, this is equivalent to filterRange.
     // Otherwise, this is equivalent to filterExact.
     function filter(range) {
-      if(arguments.length > 1) {
+      if (arguments.length > 1) {
         var result,i,len;
-        for(i=0,len=arguments.length; i < len; ++i) {
-          if(i==1) union=true;
+        for (i=0,len=arguments.length; i < len; ++i) {
+          if (i==1) union=true;
           range = arguments[i];
-          if(_.isArray(range))
+          if (_.isArray(range))
             filterRange(range);
           else
             filterExact(range);
@@ -267,7 +267,7 @@ function crossfilter() {
 
       return array;
     }
-    
+
     // Basically same as top but on ascending order
     // Note: observes this dimension's filter, unlike group and groupAll.
     function bottom(k) {
