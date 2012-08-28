@@ -228,6 +228,7 @@ function crossfilter() {
       }
       lo0 = 0;
       lo1 = n;
+      filterListeners.forEach(function(l) { l(one, [], [], true); });
       return dimension;
     }
 
