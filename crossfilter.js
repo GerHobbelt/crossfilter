@@ -679,25 +679,18 @@ function crossfilter() {
           lo1 = bounds[0],
           hi1 = bounds[1],
           added = [],
-          removed = [];
+          removed = [],
+          reset = resetNeeded || union;
 
       if (resetNeeded) {
         // lo0/hi0 invalid - select all and reset
-        for (i = 0; i < n; ++i) {
-          if (filters[k = index[i]] & one) {
-            filters[k] ^= one;
-            added.push(k);
-          }
-        }
+        for (i = 0; i < n; ++i) filters[index[i]] |= one;
         lo0 = 0;
-        hi0 = values.length;
+        hi0 = 0;
         resetNeeded = false;
       }
       if (union) {
-        for (i = lo1, j = hi1; i < j; ++i) {
-          filters[k = index[i]] ^= one;
-          added.push(k);
-        }
+        for (i = lo1; i < hi1; ++i) filters[index[i]] &= zero;
         // expand hi0/lo0 range
         if (lo0 > lo1) lo0 = lo1;
         if (hi0 < hi1) hi0 = hi1;
@@ -730,7 +723,7 @@ function crossfilter() {
         lo0 = lo1;
         hi0 = hi1;
       }
-      _.each(filterListeners, function(l) { l(one, added, removed); });
+      filterListeners.forEach(function(l) { l(one, added, removed, reset); });
       return dimension;
     }
 
@@ -738,24 +731,21 @@ function crossfilter() {
     // If the range is null, this is equivalent to filterAll.
     // If the range is an array, this is equivalent to filterRange.
     // Otherwise, this is equivalent to filterExact.
+    // Multiple arguments are treated as a union operation.
     function filter(range) {
       if (arguments.length > 1) {
-        var result,i,len;
-        for (i=0,len=arguments.length; i < len; ++i) {
-          if (i==1) union=true;
-          range = arguments[i];
-          if (_.isArray(range))
-            filterRange(range);
-          else
-            filterExact(range);
+        for (var i = 0, n = arguments.length; i < n; ++i) {
+          if (i === 1) union = true;
+          (_.isArray(range = arguments[i]) ? filterRange : filterExact)(range);
         }
         union = false;
         resetNeeded = true;
-        return arguments[len-1];
+        return dimension;
       } else {
         return range == null
           ? filterAll() : _.isArray(range)
-          ? filterRange(range)
+          ? filterRange(range) : typeof range === "function"
+          ? filterFunction(range)
           : filterExact(range);
       }
     }
@@ -763,6 +753,19 @@ function crossfilter() {
     // Filters this dimension to select the exact value.
     function filterExact(value) {
       return filterIndex((refilter = crossfilter_filterExact(bisect, value))(values));
+    }
+
+    // Custom filter function.
+    function filterFunction(f) {
+      resetNeeded = true;
+      for (var i = 0; i < n; ++i) {
+        if (f(values[i], i)) filters[index[i]] &= zero;
+        else filters[index[i]] |= one;
+      }
+      lo0 = 0;
+      lo1 = n;
+      filterListeners.forEach(function(l) { l(one, [], [], true); });
+      return dimension;
     }
 
     // Filters this dimension to select the specified range [lo, hi].
@@ -962,8 +965,8 @@ function crossfilter() {
 
       // Reduces the specified selected or deselected records.
       // This function is only used when the cardinality is greater than 1.
-      function updateMany(filterOne, added, removed) {
-        if (filterOne === one || resetNeeded) return;
+      function updateMany(filterOne, added, removed, reset) {
+        if (filterOne === one || (resetNeeded = resetNeeded || reset)) return;
 
         var i,
             k,
@@ -989,8 +992,8 @@ function crossfilter() {
 
       // Reduces the specified selected or deselected records.
       // This function is only used when the cardinality is 1.
-      function updateOne(filterOne, added, removed) {
-        if (filterOne === one || resetNeeded) return;
+      function updateOne(filterOne, added, removed, reset) {
+        if (filterOne === one || (resetNeeded = resetNeeded || reset)) return;
 
         var i,
             k,
@@ -1188,12 +1191,12 @@ function crossfilter() {
     }
 
     // Reduces the specified selected or deselected records.
-    function update(filterOne, added, removed) {
+    function update(filterOne, added, removed, reset) {
       var i,
           k,
           n;
 
-      if (resetNeeded) return;
+      if (resetNeeded = resetNeeded || reset) return;
 
       // Add the added values.
       for (i = 0, n = added.length; i < n; ++i) {
