@@ -1,13 +1,39 @@
-JS_TESTER = ./node_modules/vows/bin/vows
-JS_COMPILER = ./node_modules/uglify-js/bin/uglifyjs
+# See the README for installation instructions.
+
+NODE_PATH ?= ./node_modules
+JS_COMPILER = $(NODE_PATH)/uglify-js/bin/uglifyjs
+JS_BEAUTIFIER = $(NODE_PATH)/uglify-js/bin/uglifyjs -b -i 2 -nm -ns
+JS_TESTER = $(NODE_PATH)/vows/bin/vows
+PACKAGE_JSON = package.json
+LOCALE ?= en_US
+
+# when node or any of these tools has not been installed, ignore them.
+ifeq ($(wildcard $(JS_COMPILER)),)
+JS_COMPILER = cat
+NODE_PATH = 
+PACKAGE_JSON =
+endif
+ifeq ($(wildcard $(JS_BEAUTIFIER)),)
+JS_BEAUTIFIER = cat
+NODE_PATH = 
+PACKAGE_JSON =
+endif
+ifeq ($(wildcard $(JS_TESTER)),)
+JS_TESTER = echo "no test rig installed"
+NODE_PATH = 
+PACKAGE_JSON =
+endif
 
 .PHONY: test benchmark
 
-all: crossfilter.js
+all: crossfilter.js minified
 
-minified: crossfilter.min.js package.json
+minified: crossfilter.min.js $(PACKAGE_JSON)
 
-crossfilter.js: \
+# Modify this rule to build your own custom release.
+
+.INTERMEDIATE crossfilter.js: \
+	src/start.js \
 	src/version.js \
 	src/identity.js \
 	src/permute.js \
@@ -22,26 +48,25 @@ crossfilter.js: \
 	src/zero.js \
 	src/reduce.js \
 	src/crossfilter.js \
-	Makefile
+	src/end.js
 
 %.min.js: %.js Makefile
 	@rm -f $@
-	$(JS_COMPILER) < $< > $@
-
-%.js:
-	@rm -f $@
-	@echo '(function(exports){' > $@
-	cat $(filter %.js,$^) >> $@
-	@echo '})(this);' >> $@
+	cat $< | $(JS_COMPILER) > $@
 	@chmod a-w $@
 
-package.json: crossfilter.js src/package.js
+crossfilter.js: Makefile
+	@rm -f $@
+	cat $(filter %.js,$^) | $(JS_BEAUTIFIER) > $@
+	@chmod a-w $@
+
+$(PACKAGE_JSON): crossfilter.js src/package.js
 	@rm -f $@
 	node src/package.js > $@
 	@chmod a-w $@
 
 clean:
-	rm -f crossfilter.js crossfilter.min.js package.json
+	rm -f crossfilter.js crossfilter.min.js $(PACKAGE_JSON)
 
 test: all
 	@$(JS_TESTER)
