@@ -18,8 +18,9 @@ if (test-path crossfilter.js) {
 	remove-item crossfilter.js
 }
 
-add-content crossfilter.js "(function(exports){"
+add-content crossfilter.js "define([""lodash""], function (_) {"
 foreach ($item in $files) {
 	add-content crossfilter.js (get-content $item)
 }
-add-content crossfilter.js "})(this);"
+add-content crossfilter.js "return crossfilter;"
+add-content crossfilter.js "});"

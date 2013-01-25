@@ -1,5 +1,3 @@
-exports.crossfilter = crossfilter;
-
 function crossfilter() {
   var crossfilter = {
     add: add,

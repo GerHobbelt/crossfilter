@@ -1,4 +1,4 @@
-(function(exports){
+define(["lodash"], function (_) {
 crossfilter.version = "1.1.0";
 function crossfilter_identity(d) {
   return d;
@@ -513,8 +513,6 @@ function crossfilter_reduceSubtract(f) {
     return p - f(v);
   };
 }
-exports.crossfilter = crossfilter;
-
 function crossfilter() {
   var crossfilter = {
     add: add,
@@ -1235,4 +1233,5 @@ function crossfilter_capacity(w) {
       ? 0x10000
       : 0x100000000;
 }
-})(this);
+return crossfilter;
+});
