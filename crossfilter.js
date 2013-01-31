@@ -914,7 +914,7 @@ function crossfilter() {
         // is not needed. If the cardinality is zero, then there are no records
         // and therefore no groups to update or reset. Note that we also must
         // change the registered listener to point to the new method.
-        j = filterListeners.indexOf(update);
+        j = _.indexOf(filterListeners, update);
         if (k > 1) {
           update = updateMany;
           reset = resetMany;
