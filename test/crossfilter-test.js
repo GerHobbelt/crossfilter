@@ -1,3 +1,4 @@
+global._ = require("underscore");
 var vows = require("vows"),
     assert = require("assert"),
     d3 = require("d3"),
@@ -761,6 +762,17 @@ suite.addBatch({
           data.add([3, 4, 5]);
           assert.isFalse(callback);
         }
+      },
+
+      "remove": function() {
+        var data = tesseract([]);
+        var dimensions = d3.range(32).map(function(i) {
+          return data.dimension(function() { return 0; });
+        });
+        dimensions.forEach(function(d) {
+          d.remove();
+        });
+        data.dimension(function() { return 0; });
       }
     },
 

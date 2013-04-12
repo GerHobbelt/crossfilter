@@ -1,4 +1,5 @@
 (function(exports){
+(function(exports){
 crossfilter.version = "1.2.0";
 function crossfilter_identity(d) {
   return d;
@@ -542,7 +543,7 @@ function crossfilter() {
     if (n1) {
       data = data.concat(newData);
       filters = crossfilter_arrayLengthen(filters, n += n1);
-      dataListeners.forEach(function(l) { l(newData, n0, n1); });
+      _.each(dataListeners, function(l) { l(newData, n0, n1); });
     }
 
     return crossfilter;
@@ -575,7 +576,9 @@ function crossfilter() {
         indexListeners = [], // when data is added
         dimensionGroups = [],
         lo0 = 0,
-        hi0 = 0;
+        hi0 = 0,
+        union = false, // true when evaluating multiple filters
+        resetNeeded = false; // true after union filter operation (lo0/hi0 invalid)
 
     // Updating a dimension is a two-stage process. First, we must update the
     // associated filters for the newly-added records. Once all dimensions have
@@ -597,7 +600,7 @@ function crossfilter() {
     function preAdd(newData, n0, n1) {
 
       // Permute new values into natural order using a sorted index.
-      newValues = newData.map(value);
+      newValues = _.map(newData, value);
       newIndex = sort(crossfilter_range(n1), 0, n1);
       newValues = permute(newValues, newIndex);
 
@@ -660,59 +663,72 @@ function crossfilter() {
 
     // When all filters have updated, notify index listeners of the new values.
     function postAdd(newData, n0, n1) {
-      indexListeners.forEach(function(l) { l(newValues, newIndex, n0, n1); });
+      _.each(indexListeners, function(l) { l(newValues, newIndex, n0, n1); });
       newValues = newIndex = null;
     }
 
     // Updates the selected values based on the specified bounds [lo, hi].
     // This implementation is used by all the public filter methods.
     function filterIndexBounds(bounds) {
-      var lo1 = bounds[0],
-          hi1 = bounds[1];
+      var i,
+          j,
+          k,
+          lo1 = bounds[0],
+          hi1 = bounds[1],
+          added = [],
+          removed = [],
+          reset = resetNeeded || union;
 
       if (refilterFunction) {
         refilterFunction = null;
-        filterIndexFunction(function(d, i) { return lo1 <= i && i < hi1; });
+        filterIndexFunction(function(d, i) { return lo1 <= i && i < hi1; }, reset);
         lo0 = lo1;
         hi0 = hi1;
         return dimension;
       }
 
-      var i,
-          j,
-          k,
-          added = [],
-          removed = [];
-
-      // Fast incremental update based on previous lo index.
-      if (lo1 < lo0) {
-        for (i = lo1, j = Math.min(lo0, hi1); i < j; ++i) {
-          filters[k = index[i]] ^= one;
-          added.push(k);
-        }
-      } else if (lo1 > lo0) {
-        for (i = lo0, j = Math.min(lo1, hi0); i < j; ++i) {
-          filters[k = index[i]] ^= one;
-          removed.push(k);
-        }
+      if (resetNeeded) {
+        // lo0/hi0 invalid - select all and reset
+        for (i = 0; i < n; ++i) filters[index[i]] |= one;
+        lo0 = 0;
+        hi0 = 0;
+        resetNeeded = false;
       }
+      if (union) {
+        for (i = lo1; i < hi1; ++i) filters[index[i]] &= zero;
+        // expand hi0/lo0 range
+        if (lo0 > lo1) lo0 = lo1;
+        if (hi0 < hi1) hi0 = hi1;
+      } else {
+        // Fast incremental update based on previous lo index.
+        if (lo1 < lo0) {
+          for (i = lo1, j = Math.min(lo0, hi1); i < j; ++i) {
+            filters[k = index[i]] ^= one;
+            added.push(k);
+          }
+        } else if (lo1 > lo0) {
+          for (i = lo0, j = Math.min(lo1, hi0); i < j; ++i) {
+            filters[k = index[i]] ^= one;
+            removed.push(k);
+          }
+        }
 
-      // Fast incremental update based on previous hi index.
-      if (hi1 > hi0) {
-        for (i = Math.max(lo1, hi0), j = hi1; i < j; ++i) {
-          filters[k = index[i]] ^= one;
-          added.push(k);
+        // Fast incremental update based on previous hi index.
+        if (hi1 > hi0) {
+          for (i = Math.max(lo1, hi0), j = hi1; i < j; ++i) {
+            filters[k = index[i]] ^= one;
+            added.push(k);
+          }
+        } else if (hi1 < hi0) {
+          for (i = Math.max(lo0, hi1), j = hi0; i < j; ++i) {
+            filters[k = index[i]] ^= one;
+            removed.push(k);
+          }
         }
-      } else if (hi1 < hi0) {
-        for (i = Math.max(lo0, hi1), j = hi0; i < j; ++i) {
-          filters[k = index[i]] ^= one;
-          removed.push(k);
-        }
+        lo0 = lo1;
+        hi0 = hi1;
       }
-
-      lo0 = lo1;
-      hi0 = hi1;
-      filterListeners.forEach(function(l) { l(one, added, removed); });
+      filterListeners.forEach(function(l) { l(one, added, removed, reset); });
       return dimension;
     }
 
@@ -720,30 +736,31 @@ function crossfilter() {
     // If the range is null, this is equivalent to filterAll.
     // If the range is an array, this is equivalent to filterRange.
     // Otherwise, this is equivalent to filterExact.
+    // Multiple arguments are treated as a union operation.
     function filter(range) {
-      return range == null
-          ? filterAll() : Array.isArray(range)
+      if (arguments.length > 1) {
+        for (var i = 0, n = arguments.length; i < n; ++i) {
+          if (i === 1) union = true;
+          _.isArray(range)
           ? filterRange(range) : typeof range === "function"
           ? filterFunction(range)
           : filterExact(range);
+        }
+        union = false;
+        resetNeeded = true;
+        return dimension;
+      } else {
+        return range == null
+          ? filterAll() : _.isArray(range)
+          ? filterRange(range) : typeof range === "function"
+          ? filterFunction(range)
+          : filterExact(range);
+      }
     }
 
     // Filters this dimension to select the exact value.
     function filterExact(value) {
       return filterIndexBounds((refilter = crossfilter_filterExact(bisect, value))(values));
-    }
-
-    // Custom filter function.
-    function filterFunction(f) {
-      resetNeeded = true;
-      for (var i = 0; i < n; ++i) {
-        if (f(values[i], i)) filters[index[i]] &= zero;
-        else filters[index[i]] |= one;
-      }
-      lo0 = 0;
-      lo1 = n;
-      filterListeners.forEach(function(l) { l(one, [], [], true); });
-      return dimension;
     }
 
     // Filters this dimension to select the specified range [lo, hi].
@@ -759,13 +776,15 @@ function crossfilter() {
 
     // Filters this dimension using an arbitrary function.
     function filterFunction(f) {
+      //resetNeeded = true;
       refilter = crossfilter_filterAll;
 
-      filterIndexFunction(refilterFunction = f);
+      filterIndexFunction(refilterFunction = f, resetNeeded);
 
       lo0 = 0;
       hi0 = n;
 
+      //filterListeners.forEach(function(l) { l(one, [], [], resetNeeded); });
       return dimension;
     }
 
@@ -782,7 +801,7 @@ function crossfilter() {
           else filters[k] |= one, removed.push(k);
         }
       }
-      filterListeners.forEach(function(l) { l(one, added, removed); });
+      filterListeners.forEach(function(l) { l(one, added, removed, false); });
     }
 
     // Returns the top K selected records based on this dimension's order.
@@ -973,8 +992,8 @@ function crossfilter() {
 
       // Reduces the specified selected or deselected records.
       // This function is only used when the cardinality is greater than 1.
-      function updateMany(filterOne, added, removed) {
-        if (filterOne === one || resetNeeded) return;
+      function updateMany(filterOne, added, removed, reset) {
+        if (filterOne === one || (resetNeeded = resetNeeded || reset)) return;
 
         var i,
             k,
@@ -1000,8 +1019,8 @@ function crossfilter() {
 
       // Reduces the specified selected or deselected records.
       // This function is only used when the cardinality is 1.
-      function updateOne(filterOne, added, removed) {
-        if (filterOne === one || resetNeeded) return;
+      function updateOne(filterOne, added, removed, reset) {
+        if (filterOne === one || (resetNeeded = resetNeeded || reset)) return;
 
         var i,
             k,
@@ -1189,12 +1208,12 @@ function crossfilter() {
     }
 
     // Reduces the specified selected or deselected records.
-    function update(filterOne, added, removed) {
+    function update(filterOne, added, removed, reset) {
       var i,
           k,
           n;
 
-      if (resetNeeded) return;
+      if (resetNeeded = resetNeeded || reset) return;
 
       // Add the added values.
       for (i = 0, n = added.length; i < n; ++i) {
@@ -1293,4 +1312,6 @@ function crossfilter_capacity(w) {
       ? 0x10000
       : 0x100000000;
 }
+
+})(this);
 })(this);
