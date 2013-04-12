@@ -202,12 +202,12 @@ aside {
 
 <a href="https://github.com/square/crossfilter"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
 
-<script src="crossfilter.js"></script>
-<script src="d3.v2.js"></script>
+<script src="crossfilter.v1.js"></script>
+<script src="d3.v3.min.js"></script>
 <script>
 
 // (It's CSV, but GitHub Pages only gzip's JSON at the moment.)
-d3.csv("flights-3m.json", function(flights) {
+d3.csv("flights-3m.json", function(error, flights) {
 
   // Various formatters.
   var formatNumber = d3.format(",d"),
@@ -337,7 +337,11 @@ d3.csv("flights-3m.json", function(flights) {
       date.exit().remove();
 
       var flight = date.order().selectAll(".flight")
-          .data(function(d) { return d.values; }, function(d) { return d.index; });
+          .data(function(d) {
+            // Sort values for each group, since they aren't guaranteed to be
+            // in order within each group.
+            return d.values.sort(function(a, b) { return b.date - a.date; });
+          }, function(d) { return d.index; });
 
       var flightEnter = flight.enter().append("div")
           .attr("class", "flight");
