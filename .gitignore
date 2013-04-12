@@ -1,4 +1,14 @@
-.DS_Store
+# Editor backup files
+*~
+*.bak
+
+# MSOffice temporary files
+~*
+
+# MAC rubbish
+.DS_Store    
+														     
+# build utility directories
 node_modules
 
 # Editor bak files

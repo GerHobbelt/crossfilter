@@ -1,7 +1,7 @@
 # See the README for installation instructions.
 
 NODE_PATH ?= ./node_modules
-JS_COMPILER = $(NODE_PATH)/uglify-js/bin/uglifyjs
+JS_UGLIFY = $(NODE_PATH)/uglify-js/bin/uglifyjs -c -m -o
 JS_BEAUTIFIER = $(NODE_PATH)/uglify-js/bin/uglifyjs -b -i 2 -nm -ns
 JS_TESTER = $(NODE_PATH)/vows/bin/vows
 PACKAGE_JSON = package.json
@@ -9,7 +9,7 @@ LOCALE ?= en_US
 
 # when node or any of these tools has not been installed, ignore them.
 ifeq ($(wildcard $(JS_COMPILER)),)
-JS_COMPILER = cat
+JS_UGLIFY = cat
 NODE_PATH = 
 PACKAGE_JSON =
 endif
@@ -52,13 +52,17 @@ minified: crossfilter.min.js $(PACKAGE_JSON)
 
 %.min.js: %.js Makefile
 	@rm -f $@
-	cat $< | $(JS_COMPILER) > $@
+	cat $< | $(JS_UGLIFY) > $@
 	@chmod a-w $@
 
 crossfilter.js: Makefile
 	@rm -f $@
-	cat $(filter %.js,$^) | $(JS_BEAUTIFIER) > $@
+	@echo '(function(exports){' > $@.tmp
+	cat $(filter %.js,$^) >> $@.tmp
+	@echo '})(this);' >> $@.tmp
+	cat $@.tmp | $(JS_BEAUTIFIER) > $@
 	@chmod a-w $@
+	@rm $@.tmp
 
 $(PACKAGE_JSON): crossfilter.js src/package.js
 	@rm -f $@
