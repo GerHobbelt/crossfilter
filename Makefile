@@ -57,10 +57,7 @@ minified: crossfilter.min.js $(PACKAGE_JSON)
 
 crossfilter.js: Makefile
 	@rm -f $@
-	@echo '(function(exports){' > $@.tmp
-	cat $(filter %.js,$^) >> $@.tmp
-	@echo '})(this);' >> $@.tmp
-	cat $@.tmp | $(JS_BEAUTIFIER) > $@
+	cat $(filter %.js,$^) | $(JS_BEAUTIFIER) > $@
 	@chmod a-w $@
 	@rm $@.tmp
 

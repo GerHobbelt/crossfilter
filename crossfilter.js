@@ -1,5 +1,4 @@
 (function(exports){
-(function(exports){
 crossfilter.version = "1.2.0";
 function crossfilter_identity(d) {
   return d;
@@ -1313,5 +1312,4 @@ function crossfilter_capacity(w) {
       : 0x100000000;
 }
 
-})(this);
 })(this);

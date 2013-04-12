@@ -10,3 +10,7 @@
 														     
 # build utility directories
 node_modules
+
+# Editor bak files
+*~
+*.bak
