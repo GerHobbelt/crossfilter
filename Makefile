@@ -59,7 +59,6 @@ crossfilter.js: Makefile
 	@rm -f $@
 	cat $(filter %.js,$^) | $(JS_BEAUTIFIER) > $@
 	@chmod a-w $@
-	@rm $@.tmp
 
 $(PACKAGE_JSON): crossfilter.js src/package.js
 	@rm -f $@
