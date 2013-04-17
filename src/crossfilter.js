@@ -28,7 +28,7 @@ function crossfilter() {
     if (n1) {
       data = data.concat(newData);
       filters = crossfilter_arrayLengthen(filters, n += n1);
-      _.each(dataListeners, function(l) { l(newData, n0, n1); });
+      dataListeners.forEach(function(l) { l(newData, n0, n1); });
     }
 
     return crossfilter;
@@ -85,7 +85,7 @@ function crossfilter() {
     function preAdd(newData, n0, n1) {
 
       // Permute new values into natural order using a sorted index.
-      newValues = _.map(newData, value);
+      newValues = newData.map(value);
       newIndex = sort(crossfilter_range(n1), 0, n1);
       newValues = permute(newValues, newIndex);
 
@@ -148,7 +148,7 @@ function crossfilter() {
 
     // When all filters have updated, notify index listeners of the new values.
     function postAdd(newData, n0, n1) {
-      _.each(indexListeners, function(l) { l(newValues, newIndex, n0, n1); });
+      indexListeners.forEach(function(l) { l(newValues, newIndex, n0, n1); });
       newValues = newIndex = null;
     }
 
@@ -226,7 +226,7 @@ function crossfilter() {
       if (arguments.length > 1) {
         for (var i = 0, n = arguments.length; i < n; ++i) {
           if (i === 1) union = true;
-          _.isArray(range)
+          Array.isArray(range)
           ? filterRange(range) : typeof range === "function"
           ? filterFunction(range)
           : filterExact(range);
@@ -236,7 +236,7 @@ function crossfilter() {
         return dimension;
       } else {
         return range == null
-          ? filterAll() : _.isArray(range)
+          ? filterAll() : Array.isArray(range)
           ? filterRange(range) : typeof range === "function"
           ? filterFunction(range)
           : filterExact(range);

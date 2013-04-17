@@ -1,4 +1,3 @@
-global._ = require("underscore");
 var vows = require("vows"),
     assert = require("assert"),
     d3 = require("d3"),
