@@ -442,7 +442,8 @@ var crossfilter_array8 = crossfilter_arrayUntyped,
     crossfilter_arrayLengthen = crossfilter_identity,
     crossfilter_arrayWiden = crossfilter_identity;
 
-if (typeof Uint8Array !== "undefined") {
+var old_ios = (window.navigator.userAgent.match(/(iPad|iPhone|iPod).*CPU OS 4/g) ? true : false );
+if ((typeof Uint8Array !== "undefined") && !old_ios) {
   crossfilter_array8 = function(n) { return new Uint8Array(n); };
   crossfilter_array16 = function(n) { return new Uint16Array(n); };
   crossfilter_array32 = function(n) { return new Uint32Array(n); };
@@ -809,7 +810,7 @@ function crossfilter() {
 
       return array;
     }
-    
+
     // Returns the top K dimension values based on this dimension's order.
     // Note: observes this dimension's filter, unlike group and groupAll.
     function topValues(k) {
@@ -845,7 +846,6 @@ function crossfilter() {
       return array;
     }
     
-
     // Adds a new group to this dimension, using the specified key function.
     function group(key) {
       var group = {
