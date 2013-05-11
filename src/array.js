@@ -4,7 +4,9 @@ var crossfilter_array8 = crossfilter_arrayUntyped,
     crossfilter_arrayLengthen = crossfilter_identity,
     crossfilter_arrayWiden = crossfilter_identity;
 
-if (typeof Uint8Array !== "undefined") {
+// Adding userAgent conditional for old iOS devices that define Uint8Array inconsistently:
+var old_ios = !!window.navigator.userAgent.match(/(iPad|iPhone|iPod).*CPU OS 4/g);
+if ((typeof Uint8Array !== "undefined") && !old_ios) {
   crossfilter_array8 = function(n) { return new Uint8Array(n); };
   crossfilter_array16 = function(n) { return new Uint16Array(n); };
   crossfilter_array32 = function(n) { return new Uint32Array(n); };
