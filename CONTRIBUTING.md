@@ -8,7 +8,7 @@ Want to add support for a new backend or visualization? We'd love for you to par
 
 ### Getting Help
 
-Full API documentation is kept [in the wiki][2]. If you have a question or need help using Crossfilter, please ask on Stackoverflow using the [crossfilter tag][3]. Feel free to file bug reports and other suggestions in the [github issue tracker][4]. 
+Full API documentation is kept [in the wiki][2]. If you have a question or need help using Crossfilter, please ask on Stackoverflow using the [crossfilter tag][3]. Feel free to file bug reports and other suggestions in the [github issue tracker][4].
 
   [2]: https://github.com/square/crossfilter/wiki
   [3]: http://stackoverflow.com/questions/tagged/crossfilter
