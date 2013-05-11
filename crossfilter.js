@@ -442,7 +442,9 @@ var crossfilter_array8 = crossfilter_arrayUntyped,
     crossfilter_arrayLengthen = crossfilter_identity,
     crossfilter_arrayWiden = crossfilter_identity;
 
-if (typeof Uint8Array !== "undefined") {
+// Adding userAgent conditional for old iOS devices that define Uint8Array inconsistently:
+var old_ios = !!window.navigator.userAgent.match(/(iPad|iPhone|iPod).*CPU OS 4/g);
+if ((typeof Uint8Array !== "undefined") && !old_ios) {
   crossfilter_array8 = function(n) { return new Uint8Array(n); };
   crossfilter_array16 = function(n) { return new Uint16Array(n); };
   crossfilter_array32 = function(n) { return new Uint32Array(n); };
@@ -551,6 +553,7 @@ function crossfilter() {
   // Adds a new dimension with the specified value accessor function.
   function dimension(value) {
     var dimension = {
+      value: value,
       filter: filter,
       filterExact: filterExact,
       filterRange: filterRange,
@@ -558,6 +561,8 @@ function crossfilter() {
       filterAll: filterAll,
       top: top,
       bottom: bottom,
+      topValues: topValues,
+      bottomValues: bottomValues,
       group: group,
       groupAll: groupAll,
       remove: remove
@@ -830,6 +835,41 @@ function crossfilter() {
       while (i < hi0 && k > 0) {
         if (!filters[j = index[i]]) {
           array.push(data[j]);
+          --k;
+        }
+        i++;
+      }
+
+      return array;
+    }
+
+    // Returns the top K dimension values based on this dimension's order.
+    // Note: observes this dimension's filter, unlike group and groupAll.
+    function topValues(k) {
+      var array = [],
+          i = hi0,
+          j;
+
+      while (--i >= lo0 && k > 0) {
+        if (!filters[j = index[i]]) {
+          array.push(value(data[j]));
+          --k;
+        }
+      }
+
+      return array;
+    }
+
+    // Returns the bottom K dimension values based on this dimension's order.
+    // Note: observes this dimension's filter, unlike group and groupAll.
+    function bottomValues(k) {
+      var array = [],
+          i = lo0,
+          j;
+
+      while (i < hi0 && k > 0) {
+        if (!filters[j = index[i]]) {
+          array.push(value(data[j]));
           --k;
         }
         i++;
