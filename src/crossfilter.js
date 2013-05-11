@@ -28,7 +28,9 @@ function crossfilter() {
     if (n1) {
       data = data.concat(newData);
       filters = crossfilter_arrayLengthen(filters, n += n1);
-      dataListeners.forEach(function(l) { l(newData, n0, n1); });
+      dataListeners.forEach(function(l) {
+	    l(newData, n0, n1);
+	  });
     }
 
     return crossfilter;
@@ -86,7 +88,6 @@ function crossfilter() {
     // Incorporates the specified new records into this dimension.
     // This function is responsible for updating filters, values, and index.
     function preAdd(newData, n0, n1) {
-
       // Permute new values into natural order using a sorted index.
       newValues = newData.map(value);
       newIndex = sort(crossfilter_range(n1), 0, n1);
@@ -96,11 +97,14 @@ function crossfilter() {
       var bounds = refilter(newValues), lo1 = bounds[0], hi1 = bounds[1], i, k;
       if (refilterFunction) {
         for (i = 0; i < n1; ++i) {
-          if (!refilterFunction(newValues[i], k = newIndex[i] + n0)) filters[k] |= one;
+          if (!refilterFunction(newValues[i], k = newIndex[i] + n0))
+		    filters[k] |= one;
         }
       } else {
-        for (i = 0; i < lo1; ++i) filters[newIndex[i] + n0] |= one;
-        for (i = hi1; i < n1; ++i) filters[newIndex[i] + n0] |= one;
+        for (i = 0; i < lo1; ++i)
+		  filters[newIndex[i] + n0] |= one;
+        for (i = hi1; i < n1; ++i)
+		  filters[newIndex[i] + n0] |= one;
       }
 
       // If this dimension previously had no data, then we don't need to do the
@@ -146,12 +150,16 @@ function crossfilter() {
       }
 
       // Bisect again to recompute lo0 and hi0.
-      bounds = refilter(values), lo0 = bounds[0], hi0 = bounds[1];
+      bounds = refilter(values);
+	  lo0 = bounds[0];
+	  hi0 = bounds[1];
     }
 
     // When all filters have updated, notify index listeners of the new values.
     function postAdd(newData, n0, n1) {
-      indexListeners.forEach(function(l) { l(newValues, newIndex, n0, n1); });
+      indexListeners.forEach(function(l) {
+	    l(newValues, newIndex, n0, n1);
+	  });
       newValues = newIndex = null;
     }
 
@@ -169,7 +177,9 @@ function crossfilter() {
 
       if (refilterFunction) {
         refilterFunction = null;
-        filterIndexFunction(function(d, i) { return lo1 <= i && i < hi1; }, reset);
+        filterIndexFunction(function(d, i) {
+		  return lo1 <= i && i < hi1;
+		}, reset);
         lo0 = lo1;
         hi0 = hi1;
         return dimension;
@@ -177,13 +187,17 @@ function crossfilter() {
 
       if (resetNeeded) {
         // lo0/hi0 invalid - select all and reset
-        for (i = 0; i < n; ++i) filters[index[i]] |= one;
+        for (i = 0; i < n; ++i) {
+		  filters[index[i]] |= one;
+		}
         lo0 = 0;
         hi0 = 0;
         resetNeeded = false;
       }
       if (union) {
-        for (i = lo1; i < hi1; ++i) filters[index[i]] &= zero;
+        for (i = lo1; i < hi1; ++i) {
+		  filters[index[i]] &= zero;
+		}
         // expand hi0/lo0 range
         if (lo0 > lo1) lo0 = lo1;
         if (hi0 < hi1) hi0 = hi1;
@@ -216,7 +230,9 @@ function crossfilter() {
         lo0 = lo1;
         hi0 = hi1;
       }
-      filterListeners.forEach(function(l) { l(one, added, removed, reset); });
+      filterListeners.forEach(function(l) {
+	    l(one, added, removed, reset);
+	  });
       return dimension;
     }
 
@@ -285,11 +301,18 @@ function crossfilter() {
 
       for (i = 0; i < n; ++i) {
         if (!(filters[k = index[i]] & one) ^ (x = f(values[i], k))) {
-          if (x) filters[k] &= zero, added.push(k);
-          else filters[k] |= one, removed.push(k);
+          if (x) {
+		    filters[k] &= zero;
+			added.push(k);
+		  } else {
+		    filters[k] |= one;
+			removed.push(k);
+		  }
         }
       }
-      filterListeners.forEach(function(l) { l(one, added, removed, false); });
+      filterListeners.forEach(function(l) {
+	    l(one, added, removed, false);
+	  });
     }
 
     // Returns the top K selected records based on this dimension's order.
@@ -361,7 +384,7 @@ function crossfilter() {
 
       return array;
     }
-    
+
     // Adds a new group to this dimension, using the specified key function.
     function group(key) {
       var group = {
@@ -426,18 +449,22 @@ function crossfilter() {
 
         // Reset the new groups (k is a lower bound).
         // Also, make sure that groupIndex exists and is long enough.
-        groups = new Array(k), k = 0;
+        groups = new Array(k);
+		k = 0;
         groupIndex = k0 > 1 ? crossfilter_arrayLengthen(groupIndex, n) : crossfilter_index(n, groupCapacity);
 
         // Get the first old key (x0 of g0), if it exists.
-        if (k0) x0 = (g0 = oldGroups[0]).key;
+        if (k0) {
+		  x0 = (g0 = oldGroups[0]).key;
+		}
 
         // Find the first new key (x1), skipping NaN keys.
-        while (i1 < n1 && !((x1 = key(newValues[i1])) >= x1)) ++i1;
+        while (i1 < n1 && !((x1 = key(newValues[i1])) >= x1)) {
+		  ++i1;
+		}
 
         // While new keys remain…
         while (i1 < n1) {
-
           // Determine the lesser of the two current keys; new and old.
           // If there are no old keys remaining, then always add the new key.
           if (g0 && x0 <= x1) {
@@ -447,9 +474,15 @@ function crossfilter() {
             reIndex[i0] = k;
 
             // Retrieve the next old key.
-            if (g0 = oldGroups[++i0]) x0 = g0.key;
+            if (g0 = oldGroups[++i0]) {
+			  x0 = g0.key;
+			}
           } else {
-            g = {key: x1, value: initial()}, x = x1;
+            g = {
+			  key: x1,
+			  value: initial()
+			};
+			x = x1;
           }
 
           // Add the lesser group.
@@ -459,7 +492,9 @@ function crossfilter() {
           // advancing the new key and populating the associated group index.
           while (!(x1 > x)) {
             groupIndex[j = newIndex[i1] + n0] = k;
-            if (!(filters[j] & zero)) g.value = add(g.value, data[j]);
+            if (!(filters[j] & zero)) {
+			  g.value = add(g.value, data[j]);
+			}
             if (++i1 >= n1) break;
             x1 = key(newValues[i1]);
           }
@@ -477,9 +512,11 @@ function crossfilter() {
 
         // If we added any new groups before any old groups,
         // update the group index of all the old records.
-        if (k > i0) for (i0 = 0; i0 < n0; ++i0) {
-          groupIndex[i0] = reIndex[groupIndex[i0]];
-        }
+        if (k > i0) {
+		  for (i0 = 0; i0 < n0; ++i0) {
+            groupIndex[i0] = reIndex[groupIndex[i0]];
+          }
+		}
 
         // Modify the update and reset behavior based on the cardinality.
         // If the cardinality is less than or equal to one, then the groupIndex
@@ -604,7 +641,10 @@ function crossfilter() {
 
       // Returns the array of group values, in the dimension's natural order.
       function all() {
-        if (resetNeeded) reset(), resetNeeded = false;
+        if (resetNeeded) {
+		  reset();
+		  resetNeeded = false;
+		}
         return groups;
       }
 
@@ -638,7 +678,9 @@ function crossfilter() {
       function order(value) {
         select = heapselect_by(valueOf);
         heap = heap_by(valueOf);
-        function valueOf(d) { return value(d.value); }
+        function valueOf(d) {
+		  return value(d.value);
+		}
         return group;
       }
 
@@ -655,9 +697,13 @@ function crossfilter() {
       // Removes this group and associated event listeners.
       function remove() {
         var i = filterListeners.indexOf(update);
-        if (i >= 0) filterListeners.splice(i, 1);
+        if (i >= 0) {
+		  filterListeners.splice(i, 1);
+		}
         i = indexListeners.indexOf(add);
-        if (i >= 0) indexListeners.splice(i, 1);
+        if (i >= 0) {
+		  indexListeners.splice(i, 1);
+		}
         return group;
       }
 
@@ -666,23 +712,34 @@ function crossfilter() {
 
     // A convenience function for generating a singleton group.
     function groupAll() {
-      var g = group(crossfilter_null), all = g.all;
+      var g = group(crossfilter_null),
+	      all = g.all;
       delete g.all;
       delete g.top;
       delete g.order;
       delete g.orderNatural;
       delete g.size;
-      g.value = function() { return all()[0].value; };
+      g.value = function() {
+	    return all()[0].value;
+	  };
       return g;
     }
 
     function remove() {
-      dimensionGroups.forEach(function(group) { group.remove(); });
+      dimensionGroups.forEach(function(group) {
+	    group.remove();
+	  });
       var i = dataListeners.indexOf(preAdd);
-      if (i >= 0) dataListeners.splice(i, 1);
+      if (i >= 0) {
+	    dataListeners.splice(i, 1);
+	  }
       i = dataListeners.indexOf(postAdd);
-      if (i >= 0) dataListeners.splice(i, 1);
-      for (i = 0; i < n; ++i) filters[i] &= zero;
+      if (i >= 0) {
+	    dataListeners.splice(i, 1);
+	  }
+      for (i = 0; i < n; ++i) {
+	    filters[i] &= zero;
+	  }
       m &= zero;
       return dimension;
     }
@@ -788,16 +845,23 @@ function crossfilter() {
 
     // Returns the computed reduce value.
     function value() {
-      if (resetNeeded) reset(), resetNeeded = false;
+      if (resetNeeded) {
+	    reset();
+		resetNeeded = false;
+	  }
       return reduceValue;
     }
 
     // Removes this group and associated event listeners.
     function remove() {
       var i = filterListeners.indexOf(update);
-      if (i >= 0) filterListeners.splice(i);
+      if (i >= 0) {
+	    filterListeners.splice(i);
+	  }
       i = dataListeners.indexOf(add);
-      if (i >= 0) dataListeners.splice(i);
+      if (i >= 0) {
+	    dataListeners.splice(i);
+	  }
       return group;
     }
 
@@ -825,7 +889,9 @@ function crossfilter_index(n, m) {
 // Constructs a new array of size n, with sequential values from 0 to n - 1.
 function crossfilter_range(n) {
   var range = crossfilter_index(n, n);
-  for (var i = -1; ++i < n;) range[i] = i;
+  for (var i = -1; ++i < n;) {
+    range[i] = i;
+  }
   return range;
 }
 
