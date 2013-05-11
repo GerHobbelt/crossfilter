@@ -1,5 +1,3 @@
-exports.crossfilter = crossfilter;
-
 function crossfilter() {
   var crossfilter = {
     add: add,
@@ -28,7 +26,7 @@ function crossfilter() {
     if (n1) {
       data = data.concat(newData);
       filters = crossfilter_arrayLengthen(filters, n += n1);
-      dataListeners.forEach(function(l) {
+      _.each(dataListeners, function(l) { 
         l(newData, n0, n1);
       });
     }
@@ -89,7 +87,7 @@ function crossfilter() {
     // This function is responsible for updating filters, values, and index.
     function preAdd(newData, n0, n1) {
       // Permute new values into natural order using a sorted index.
-      newValues = newData.map(value);
+      newValues = _.map(newData, value);
       newIndex = sort(crossfilter_range(n1), 0, n1);
       newValues = permute(newValues, newIndex);
 
@@ -157,7 +155,7 @@ function crossfilter() {
 
     // When all filters have updated, notify index listeners of the new values.
     function postAdd(newData, n0, n1) {
-      indexListeners.forEach(function(l) {
+      _.each(indexListeners, function(l) { 
         l(newValues, newIndex, n0, n1);
       });
       newValues = newIndex = null;
@@ -230,7 +228,7 @@ function crossfilter() {
         lo0 = lo1;
         hi0 = hi1;
       }
-      filterListeners.forEach(function(l) {
+      _.each(filterListeners, function(l) { 
         l(one, added, removed, reset);
       });
       return dimension;
@@ -245,7 +243,7 @@ function crossfilter() {
       if (arguments.length > 1) {
         for (var i = 0, n = arguments.length; i < n; ++i) {
           if (i === 1) union = true;
-          Array.isArray(range)
+          _.isArray(range)
           ? filterRange(range) : typeof range === "function"
           ? filterFunction(range)
           : filterExact(range);
@@ -255,7 +253,7 @@ function crossfilter() {
         return dimension;
       } else {
         return range == null
-          ? filterAll() : Array.isArray(range)
+          ? filterAll() : _.isArray(range)
           ? filterRange(range) : typeof range === "function"
           ? filterFunction(range)
           : filterExact(range);
@@ -310,7 +308,7 @@ function crossfilter() {
           }
         }
       }
-      filterListeners.forEach(function(l) {
+      _.forEach(filterListeners, function(l) {
         l(one, added, removed, false);
       });
     }
@@ -523,7 +521,7 @@ function crossfilter() {
         // is not needed. If the cardinality is zero, then there are no records
         // and therefore no groups to update or reset. Note that we also must
         // change the registered listener to point to the new method.
-        j = filterListeners.indexOf(update);
+        j = _.indexOf(filterListeners, update);
         if (k > 1) {
           update = updateMany;
           reset = resetMany;
@@ -696,13 +694,13 @@ function crossfilter() {
 
       // Removes this group and associated event listeners.
       function remove() {
-        var i = filterListeners.indexOf(update);
+        var i = _.indexOf(filterListeners, update);
         if (i >= 0) {
-          filterListeners.splice(i, 1);
+          _.splice(filterListeners, i, 1);
         }
-        i = indexListeners.indexOf(add);
+        i = _.indexOf(indexListeners, add);
         if (i >= 0) {
-          indexListeners.splice(i, 1);
+          _.splice(indexListeners, i, 1);
         }
         return group;
       }
@@ -726,16 +724,16 @@ function crossfilter() {
     }
 
     function remove() {
-      dimensionGroups.forEach(function(group) {
+      _.forEach(dimensionGroups, function(group) {
         group.remove();
       });
-      var i = dataListeners.indexOf(preAdd);
+      var i = _.indexOf(dataListeners, preAdd);
       if (i >= 0) {
-        dataListeners.splice(i, 1);
+        _.splice(dataListeners, i, 1);
       }
-      i = dataListeners.indexOf(postAdd);
+      i = _.indexOf(dataListeners, postAdd);
       if (i >= 0) {
-        dataListeners.splice(i, 1);
+        _.splice(dataListeners, i, 1);
       }
       for (i = 0; i < n; ++i) {
         filters[i] &= zero;
@@ -854,13 +852,13 @@ function crossfilter() {
 
     // Removes this group and associated event listeners.
     function remove() {
-      var i = filterListeners.indexOf(update);
+      var i = _.indexOf(filterListeners, update);
       if (i >= 0) {
-        filterListeners.splice(i);
+        _.splice(filterListeners, i);
       }
-      i = dataListeners.indexOf(add);
+      i = _.indexOf(dataListeners, add);
       if (i >= 0) {
-        dataListeners.splice(i);
+        _.splice(dataListeners, i);
       }
       return group;
     }
