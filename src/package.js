@@ -20,8 +20,8 @@ util.puts(JSON.stringify({
     "url": "http://github.com/square/crossfilter.git"
   },
   "devDependencies": {
-    "d3": "3.0.x",
-    "vows": "0.7.0",
+    "d3": "git://github.com/GerHobbelt/d3.git",
+    "vows": "*",
     "uglify-js": "git://github.com/mishoo/UglifyJS2.git#aebafad4"
   },
   "scripts": {"test": "./node_modules/.bin/vows"}
