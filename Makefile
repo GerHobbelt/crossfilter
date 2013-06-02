@@ -1,26 +1,26 @@
 # See the README for installation instructions.
 
 NODE_PATH ?= ./node_modules
-JS_UGLIFY = $(NODE_PATH)/uglify-js/bin/uglifyjs -c -m -o
-JS_BEAUTIFIER = $(NODE_PATH)/uglify-js/bin/uglifyjs -b -i 2 -nm -ns
-JS_TESTER = $(NODE_PATH)/vows/bin/vows
+JS_UGLIFY = $(NODE_PATH)/.bin/uglifyjs -c -m
+JS_BEAUTIFIER = $(NODE_PATH)/.bin/uglifyjs -b -i 2 -nm -ns
+JS_TESTER = $(NODE_PATH)/.bin/vows
 PACKAGE_JSON = package.json
 LOCALE ?= en_US
 
 # when node or any of these tools has not been installed, ignore them.
-ifeq ($(wildcard $(JS_COMPILER)),)
+ifeq ($(wildcard $(JS_UGLIFY)),)
 JS_UGLIFY = cat
-NODE_PATH = 
+NODE_PATH =
 PACKAGE_JSON =
 endif
 ifeq ($(wildcard $(JS_BEAUTIFIER)),)
 JS_BEAUTIFIER = cat
-NODE_PATH = 
+NODE_PATH =
 PACKAGE_JSON =
 endif
 ifeq ($(wildcard $(JS_TESTER)),)
 JS_TESTER = echo "no test rig installed"
-NODE_PATH = 
+NODE_PATH =
 PACKAGE_JSON =
 endif
 
@@ -57,7 +57,7 @@ minified: crossfilter.min.js $(PACKAGE_JSON)
 
 crossfilter.js: Makefile
 	@rm -f $@
-	cat $(filter %.js,$^) | $(JS_BEAUTIFIER) > $@
+	cat $(filter %.js,$^) > $@
 	@chmod a-w $@
 
 $(PACKAGE_JSON): crossfilter.js src/package.js
