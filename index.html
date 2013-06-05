@@ -218,7 +218,9 @@ d3.csv("flights-3m.json", function(error, flights) {
 
   // A nest operator, for grouping the flight list.
   var nestByDate = d3.nest()
-      .key(function(d) { return d3.time.day(d.date); });
+      .key(function(d) {
+        return d3.time.day(d.date);
+      });
 
   // A little coercion, since the CSV is untyped.
   flights.forEach(function(d, i) {
@@ -231,14 +233,26 @@ d3.csv("flights-3m.json", function(error, flights) {
   // Create the crossfilter for the relevant dimensions and groups.
   var flight = crossfilter(flights),
       all = flight.groupAll(),
-      date = flight.dimension(function(d) { return d3.time.day(d.date); }),
+      date = flight.dimension(function(d) {
+        return d3.time.day(d.date);
+      }),
       dates = date.group(),
-      hour = flight.dimension(function(d) { return d.date.getHours() + d.date.getMinutes() / 60; }),
+      hour = flight.dimension(function(d) {
+        return d.date.getHours() + d.date.getMinutes() / 60;
+      }),
       hours = hour.group(Math.floor),
-      delay = flight.dimension(function(d) { return Math.max(-60, Math.min(149, d.delay)); }),
-      delays = delay.group(function(d) { return Math.floor(d / 10) * 10; }),
-      distance = flight.dimension(function(d) { return Math.min(1999, d.distance); }),
-      distances = distance.group(function(d) { return Math.floor(d / 50) * 50; });
+      delay = flight.dimension(function(d) {
+        return Math.max(-60, Math.min(149, d.delay));
+      }),
+      delays = delay.group(function(d) {
+        return Math.floor(d / 10) * 10;
+      }),
+      distance = flight.dimension(function(d) {
+        return Math.min(1999, d.distance);
+      }),
+      distances = distance.group(function(d) {
+        return Math.floor(d / 50) * 50;
+      });
 
   var charts = [
 
@@ -279,7 +293,9 @@ d3.csv("flights-3m.json", function(error, flights) {
   // We also listen to the chart's brush events to update the display.
   var chart = d3.selectAll(".chart")
       .data(charts)
-      .each(function(chart) { chart.on("brush", renderAll).on("brushend", renderAll); });
+      .each(function(chart) {
+        chart.on("brush", renderAll).on("brushend", renderAll);
+      });
 
   // Render the initial lists.
   var list = d3.selectAll(".list")
@@ -313,7 +329,9 @@ d3.csv("flights-3m.json", function(error, flights) {
   }
 
   window.filter = function(filters) {
-    filters.forEach(function(d, i) { charts[i].filter(d); });
+    filters.forEach(function(d, i) {
+      charts[i].filter(d);
+    });
     renderAll();
   };
 
@@ -327,13 +345,17 @@ d3.csv("flights-3m.json", function(error, flights) {
 
     div.each(function() {
       var date = d3.select(this).selectAll(".date")
-          .data(flightsByDate, function(d) { return d.key; });
+          .data(flightsByDate, function(d) {
+            return d.key;
+          });
 
       date.enter().append("div")
           .attr("class", "date")
         .append("div")
           .attr("class", "day")
-          .text(function(d) { return formatDate(d.values[0].date); });
+          .text(function(d) {
+            return formatDate(d.values[0].date);
+          });
 
       date.exit().remove();
 
@@ -341,32 +363,48 @@ d3.csv("flights-3m.json", function(error, flights) {
           .data(function(d) {
             // Sort values for each group, since they aren't guaranteed to be
             // in order within each group.
-            return d.values.sort(function(a, b) { return b.date - a.date; });
-          }, function(d) { return d.index; });
+            return d.values.sort(function(a, b) {
+              return b.date - a.date;
+            });
+          }, function(d) {
+            return d.index;
+          });
 
       var flightEnter = flight.enter().append("div")
           .attr("class", "flight");
 
       flightEnter.append("div")
           .attr("class", "time")
-          .text(function(d) { return formatTime(d.date); });
+          .text(function(d) {
+            return formatTime(d.date);
+          });
 
       flightEnter.append("div")
           .attr("class", "origin")
-          .text(function(d) { return d.origin; });
+          .text(function(d) {
+            return d.origin;
+          });
 
       flightEnter.append("div")
           .attr("class", "destination")
-          .text(function(d) { return d.destination; });
+          .text(function(d) {
+            return d.destination;
+          });
 
       flightEnter.append("div")
           .attr("class", "distance")
-          .text(function(d) { return formatNumber(d.distance) + " mi."; });
+          .text(function(d) {
+            return formatNumber(d.distance) + " mi.";
+          });
 
       flightEnter.append("div")
           .attr("class", "delay")
-          .classed("early", function(d) { return d.delay < 0; })
-          .text(function(d) { return formatChange(d.delay) + " min."; });
+          .classed("early", function(d) {
+            return d.delay < 0;
+          })
+          .text(function(d) {
+            return formatChange(d.delay) + " min.";
+          });
 
       flight.exit().remove();
 
@@ -421,7 +459,9 @@ d3.csv("flights-3m.json", function(error, flights) {
           g.selectAll(".bar")
               .data(["background", "foreground"])
             .enter().append("path")
-              .attr("class", function(d) { return d + " bar"; })
+              .attr("class", function(d) {
+                return d + " bar";
+              })
               .datum(group.all());
 
           g.selectAll(".foreground.bar")
@@ -494,10 +534,12 @@ d3.csv("flights-3m.json", function(error, flights) {
     brush.on("brush.chart", function() {
       var g = d3.select(this.parentNode),
           extent = brush.extent();
-      if (round) g.select(".brush")
+      if (round) {
+        g.select(".brush")
           .call(brush.extent(extent = extent.map(round)))
         .selectAll(".resize")
           .style("display", null);
+      }
       g.select("#clip-" + id + " rect")
           .attr("x", x(extent[0]))
           .attr("width", x(extent[1]) - x(extent[0]));
@@ -514,13 +556,15 @@ d3.csv("flights-3m.json", function(error, flights) {
     });
 
     chart.margin = function(_) {
-      if (!arguments.length) return margin;
+      if (!arguments.length)
+        return margin;
       margin = _;
       return chart;
     };
 
     chart.x = function(_) {
-      if (!arguments.length) return x;
+      if (!arguments.length)
+        return x;
       x = _;
       axis.scale(x);
       brush.x(x);
@@ -528,13 +572,15 @@ d3.csv("flights-3m.json", function(error, flights) {
     };
 
     chart.y = function(_) {
-      if (!arguments.length) return y;
+      if (!arguments.length)
+        return y;
       y = _;
       return chart;
     };
 
     chart.dimension = function(_) {
-      if (!arguments.length) return dimension;
+      if (!arguments.length)
+        return dimension;
       dimension = _;
       return chart;
     };
@@ -552,13 +598,15 @@ d3.csv("flights-3m.json", function(error, flights) {
     };
 
     chart.group = function(_) {
-      if (!arguments.length) return group;
+      if (!arguments.length)
+        return group;
       group = _;
       return chart;
     };
 
     chart.round = function(_) {
-      if (!arguments.length) return round;
+      if (!arguments.length)
+        return round;
       round = _;
       return chart;
     };
