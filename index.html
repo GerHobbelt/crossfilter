@@ -210,6 +210,15 @@ aside {
 // (It's CSV, but GitHub Pages only gzip's JSON at the moment.)
 d3.csv("flights-3m.json", function(error, flights) {
 
+  if (!flights) {
+    if (error && error.status == 0) {
+      alert("Failed to load the JSON file; maybe this is due to the cross origin requests only being supported for HTTP?");
+    } else {
+      alert("Failed to load the JSON file; HTTP response code " + (error ? error.status : "(???)"));
+    }
+    return;
+  }
+
   // Various formatters.
   var formatNumber = d3.format(",d"),
       formatChange = d3.format("+,d"),
