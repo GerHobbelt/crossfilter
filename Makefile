@@ -10,18 +10,12 @@ LOCALE ?= en_US
 # when node or any of these tools has not been installed, ignore them.
 ifeq ($(wildcard $(JS_UGLIFY)),)
 JS_UGLIFY = cat
-NODE_PATH =
-PACKAGE_JSON =
 endif
 ifeq ($(wildcard $(JS_BEAUTIFIER)),)
 JS_BEAUTIFIER = cat
-NODE_PATH =
-PACKAGE_JSON =
 endif
 ifeq ($(wildcard $(JS_TESTER)),)
 JS_TESTER = echo "no test rig installed"
-NODE_PATH =
-PACKAGE_JSON =
 endif
 
 .PHONY: test benchmark
@@ -60,9 +54,11 @@ crossfilter.js: Makefile
 	cat $(filter %.js,$^) > $@
 	@chmod a-w $@
 
-$(PACKAGE_JSON): crossfilter.js src/package.js
+# always generate 'a' package.json, even when a lot of the tools are missing now:
+$(PACKAGE_JSON): crossfilter.js src/package.js package.json.bootstrap
 	@rm -f $@
-	node src/package.js > $@
+	-node src/package.js > $@
+	@[ -s $@ ] || cp package.json.bootstrap $@
 	@chmod a-w $@
 
 clean:
