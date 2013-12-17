@@ -18,7 +18,7 @@ ifeq ($(wildcard $(JS_TESTER)),)
 JS_TESTER = echo "no test rig installed"
 endif
 
-.PHONY: test benchmark
+.PHONY: all minified test benchmark npm-install clean superclean
 
 all: crossfilter.js minified
 
@@ -44,12 +44,12 @@ minified: crossfilter.min.js $(PACKAGE_JSON)
 	src/crossfilter.js \
 	src/end.js
 
-%.min.js: %.js Makefile
+%.min.js: %.js Makefile npm-install
 	@rm -f $@
 	cat $< | $(JS_UGLIFY) > $@
 	@chmod a-w $@
 
-crossfilter.js: Makefile
+crossfilter.js: Makefile 
 	@rm -f $@
 	cat $(filter %.js,$^) > $@
 	@chmod a-w $@
@@ -61,10 +61,16 @@ $(PACKAGE_JSON): crossfilter.js src/package.js package.json.bootstrap
 	@[ -s $@ ] || cp package.json.bootstrap $@
 	@chmod a-w $@
 
-clean:
-	rm -f crossfilter.js crossfilter.min.js $(PACKAGE_JSON)
+npm-install: $(PACKAGE_JSON)
+	npm install
 
-test: all
+clean:
+	-rm -f crossfilter.js crossfilter.min.js $(PACKAGE_JSON)
+
+superclean: clean
+	-rm -rf node_modules
+
+test: all npm-install
 	@$(JS_TESTER)
 
 benchmark: all
