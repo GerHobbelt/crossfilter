@@ -1,8 +1,8 @@
 var crossfilter_array8 = crossfilter_arrayUntyped,
     crossfilter_array16 = crossfilter_arrayUntyped,
     crossfilter_array32 = crossfilter_arrayUntyped,
-    crossfilter_arrayLengthen = crossfilter_identity,
-    crossfilter_arrayWiden = crossfilter_identity;
+    crossfilter_arrayLengthen = crossfilter_arrayLengthenUntyped,
+    crossfilter_arrayWiden = crossfilter_arrayWidenUntyped;
 
 // Adding userAgent conditional for old iOS devices that define Uint8Array inconsistently:
 var old_ios = typeof window !== 'undefined' && window.navigator && !!window.navigator.userAgent.match(/(iPad|iPhone|iPod).*CPU OS 4/g);
@@ -12,6 +12,7 @@ if ((typeof Uint8Array !== "undefined") && !old_ios) {
   crossfilter_array32 = function(n) { return new Uint32Array(n); };
 
   crossfilter_arrayLengthen = function(array, length) {
+    if (array.length >= length) return array;
     var copy = new array.constructor(length);
     copy.set(array);
     return copy;
@@ -30,5 +31,18 @@ if ((typeof Uint8Array !== "undefined") && !old_ios) {
 }
 
 function crossfilter_arrayUntyped(n) {
-  return new Array(n);
+  var array = new Array(n), i = -1;
+  while (++i < n) array[i] = 0;
+  return array;
+}
+
+function crossfilter_arrayLengthenUntyped(array, length) {
+  var n = array.length;
+  while (n < length) array[n++] = 0;
+  return array;
+}
+
+function crossfilter_arrayWidenUntyped(array, width) {
+  if (width > 32) throw new Error("invalid array width!");
+  return array;
 }
